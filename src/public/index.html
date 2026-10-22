@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Trust Bank - Secure Core Banking</title>
+  <meta name="description" content="Secure Core Banking Transaction Portal with Automated CI/CD and Real-time Prometheus Observability">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-title">Apex Trust Bank</span>
+          <span class="brand-subtitle">Cloud Native Banking Engine</span>
+        </div>
+      </div>
+      <div class="header-status">
+        <span class="status-indicator">
+          <span class="pulse-dot"></span>
+          K8s Cluster Active
+        </span>
+        <a href="/metrics" target="_blank" class="badge-link" id="metrics-link">Prometheus /metrics</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- View 1: Secure Login Form -->
+    <section id="login-section" class="view-section">
+      <div class="login-card">
+        <div class="card-header">
+          <h2>Secure Portal Login</h2>
+          <p>Please enter your authorized credentials to access banking services.</p>
+        </div>
+
+        <div id="login-alert" class="alert d-none"></div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="e.g. john_doe" autocomplete="username" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Security Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••••••" autocomplete="current-password" required>
+          </div>
+
+          <button type="submit" id="login-btn" class="btn btn-primary btn-block">
+            <span>Authenticate Securely</span>
+          </button>
+        </form>
+
+        <div class="demo-credentials-box">
+          <span class="demo-badge">Test Credentials</span>
+          <p>User: <code>john_doe</code> &bull; Password: <code>Password@123</code></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- View 2: Banking Dashboard (Visible upon authentication) -->
+    <section id="dashboard-section" class="view-section d-none">
+      <div class="dashboard-header">
+        <div>
+          <h1 id="welcome-message">Welcome back, Johnathan</h1>
+          <p class="account-id-label">Account No: <strong id="user-account-number">ACC-88329104</strong></p>
+        </div>
+        <button id="logout-btn" class="btn btn-outline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+          Sign Out
+        </button>
+      </div>
+
+      <!-- Financial Metrics Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card balance-card">
+          <div class="metric-top">
+            <span class="metric-label">Available Balance</span>
+            <span class="chip-badge">Primary Checking</span>
+          </div>
+          <div class="balance-amount" id="account-balance">$0.00</div>
+          <div class="metric-bottom">
+            <span class="live-tag">Updated in real-time</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-top">
+            <span class="metric-label">Security State</span>
+            <span class="status-online">Operational</span>
+          </div>
+          <div class="metric-value">256-bit TLS</div>
+          <p class="metric-meta">Prometheus scraping active</p>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-top">
+            <span class="metric-label">DevOps Monitoring</span>
+          </div>
+          <div class="metric-value" id="system-uptime">NodePort 3000</div>
+          <button id="simulate-outage-btn" class="btn btn-sm btn-danger mt-2">
+            Toggle Failure Injection (Demo)
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Action & Transactions Split -->
+      <div class="dashboard-grid">
+        <!-- Fund Transfer Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Initiate Fund Transfer</h3>
+            <p>Instant wire transfer with automated balance verification.</p>
+          </div>
+
+          <div id="transfer-alert" class="alert d-none"></div>
+
+          <form id="transfer-form">
+            <div class="form-group">
+              <label for="transfer-recipient">Recipient Account / Name</label>
+              <input type="text" id="transfer-recipient" placeholder="e.g. Alice Smith (ACC-449102)" required>
+            </div>
+
+            <div class="form-group">
+              <label for="transfer-amount">Amount (USD)</label>
+              <div class="input-prefix-wrapper">
+                <span class="input-prefix">$</span>
+                <input type="number" id="transfer-amount" step="0.01" min="0.01" placeholder="0.00" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="transfer-note">Transfer Memo / Reference</label>
+              <input type="text" id="transfer-note" placeholder="e.g. Rent, Invoice #304">
+            </div>
+
+            <button type="submit" id="transfer-btn" class="btn btn-primary btn-block">
+              Transfer Funds Now
+            </button>
+          </form>
+        </div>
+
+        <!-- Recent Transactions History Table -->
+        <div class="card">
+          <div class="card-header flex-between">
+            <div>
+              <h3>Transaction History</h3>
+              <p>Audit trail of all recent operations.</p>
+            </div>
+            <button id="refresh-btn" class="btn btn-sm btn-outline">Refresh</button>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Recipient / Description</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>&copy; 2026 Apex Trust Banking Systems &bull; Secured with GitHub, Jenkins, Selenium, Docker, Kubernetes & Prometheus</p>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

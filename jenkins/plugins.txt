@@ -1,0 +1,15 @@
+git
+workflow-aggregator
+pipeline-stage-view
+blueocean
+docker-workflow
+nodejs
+kubernetes-cli
+credentials-binding
+junit
+html-publisher
+configuration-as-code
+job-dsl
+build-timeout
+timestamper
+ws-cleanup

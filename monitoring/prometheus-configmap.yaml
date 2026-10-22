@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-server-conf
+  labels:
+    name: prometheus-server-conf
+data:
+  prometheus.rules: |-
+    groups:
+    - name: banking_alerts
+      rules:
+      - alert: HighHttp5xxErrorRate
+        expr: sum(rate(banking_http_requests_total{status_code=~"5.."}[1m])) / sum(rate(banking_http_requests_total[1m])) > 0.05
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP 5xx error rate detected on Banking Portal"
+          description: "Over 5% of all incoming requests are returning 500 internal server errors."
+
+      - alert: BankingServiceDown
+        expr: up{job="banking-app"} == 0
+        for: 15s
+        labels:
+          severity: page
+        annotations:
+          summary: "Banking Application Pod Unreachable"
+          description: "The Prometheus scraper cannot reach the Banking Application health/metrics endpoint."
+
+      - alert: HighTransferLatency
+        expr: histogram_quantile(0.95, sum(rate(banking_transfer_duration_seconds_bucket[1m])) by (le)) > 1.0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Fund transfer latency SLA breached (>1s)"
+          description: "95% of banking fund transfers are taking longer than 1 second to complete."
+
+  prometheus.yml: |-
+    global:
+      scrape_interval: 5s
+      evaluation_interval: 5s
+
+    rule_files:
+      - /etc/prometheus/prometheus.rules
+
+    scrape_configs:
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      - job_name: 'banking-app'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: ['banking-app-service:3000']

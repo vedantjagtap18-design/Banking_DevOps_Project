@@ -1,0 +1,48 @@
+groups:
+  - name: banking_alerts
+    rules:
+
+      # Alert: High 5xx error rate (>5% of requests failing)
+      - alert: HighHttp5xxErrorRate
+        expr: |
+          sum(rate(banking_http_requests_total{status_code=~"5.."}[1m])) /
+          sum(rate(banking_http_requests_total[1m])) > 0.05
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "HIGH 5xx Error Rate on Banking Portal"
+          description: "More than 5% of requests are returning HTTP 500 errors. Incident injection may be active."
+
+      # Alert: Banking app is completely down
+      - alert: BankingServiceDown
+        expr: up{job="banking-app"} == 0
+        for: 15s
+        labels:
+          severity: page
+        annotations:
+          summary: "Banking Application is UNREACHABLE"
+          description: "Prometheus cannot scrape metrics from the banking application. Service may be crashed."
+
+      # Alert: 95th percentile transfer latency > 1 second
+      - alert: HighTransferLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(banking_transfer_duration_seconds_bucket[1m])) by (le)
+          ) > 1.0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Fund Transfer Latency SLA Breached (>1s p95)"
+          description: "95th percentile of fund transfers are taking more than 1 second to complete."
+
+      # Alert: High volume of failed login attempts (possible brute force)
+      - alert: HighFailedLoginRate
+        expr: rate(banking_login_attempts_total{status="failed"}[5m]) > 0.5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Failed Login Rate - Possible Brute Force Attack"
+          description: "More than 0.5 failed logins per second detected in the last 5 minutes."

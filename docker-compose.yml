@@ -1,0 +1,111 @@
+version: '3.8'
+
+# ============================================================
+# APEX TRUST BANK - Complete DevOps Stack
+# Runs: Banking App + Prometheus + Grafana + Jenkins
+# Usage: docker-compose up -d
+# ============================================================
+
+networks:
+  banking-net:
+    driver: bridge
+
+services:
+
+  # ─────────────────────────────────────────────
+  # 1. BANKING APPLICATION (Node.js + Express)
+  # Exposes: http://localhost:3000
+  # Metrics: http://localhost:3000/metrics
+  # ─────────────────────────────────────────────
+  banking-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: banking-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - banking-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ─────────────────────────────────────────────
+  # 2. PROMETHEUS (Metrics Collection & Alerting)
+  # Exposes: http://localhost:9090
+  # Scrapes banking-app /metrics every 5s
+  # ─────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - banking-net
+    restart: unless-stopped
+    depends_on:
+      - banking-app
+
+  # ─────────────────────────────────────────────
+  # 3. GRAFANA (Dashboards & Visual Monitoring)
+  # Exposes: http://localhost:3001
+  # Login: admin / admin123
+  # ─────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - banking-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # ─────────────────────────────────────────────
+  # 4. JENKINS (CI/CD Automation Server)
+  # Exposes: http://localhost:8080
+  # Includes: Docker-in-Docker support
+  # ─────────────────────────────────────────────
+  jenkins:
+    image: jenkins/jenkins:lts-jdk17
+    container_name: jenkins
+    privileged: true
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    networks:
+      - banking-net
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  jenkins_data:
